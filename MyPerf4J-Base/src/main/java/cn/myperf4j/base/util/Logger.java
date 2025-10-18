@@ -9,12 +9,8 @@ import java.util.Date;
  */
 public final class Logger {
 
-    private static final ThreadLocal<DateFormat> TO_MILLS_DATE_FORMAT = new ThreadLocal<DateFormat>() {
-        @Override
-        protected DateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        }
-    };
+    private static final ThreadLocal<DateFormat> TO_MILLS_DATE_FORMAT =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"));
 
     private static boolean debugEnable;
 
@@ -62,6 +58,13 @@ public final class Logger {
         System.out.println(getPrefix(WARN_LEVEL) + msg);
     }
 
+    public static void warn(String msg, Throwable throwable) {
+        synchronized (System.out) {
+            System.out.println(getPrefix(WARN_LEVEL) + msg + " " + throwable.getMessage());
+            throwable.printStackTrace(System.out);
+        }
+    }
+
     public static void error(String msg) {
         System.err.println(getPrefix(ERROR_LEVEL) + msg);
     }
@@ -69,7 +72,7 @@ public final class Logger {
     public static void error(String msg, Throwable throwable) {
         synchronized (System.err) {
             System.err.println(getPrefix(ERROR_LEVEL) + msg + " " + throwable.getMessage());
-            throwable.printStackTrace();
+            throwable.printStackTrace(System.err);
         }
     }
 }

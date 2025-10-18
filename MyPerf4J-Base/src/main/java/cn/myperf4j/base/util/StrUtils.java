@@ -2,8 +2,9 @@ package cn.myperf4j.base.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Created by LinShunkang on 2019/05/12
@@ -85,10 +86,10 @@ public final class StrUtils {
 
     public static List<String> splitAsList(final String str, final char separatorChar) {
         if (str == null || str.isEmpty()) {
-            return Collections.emptyList();
+            return emptyList();
         }
 
-        List<String> result = new ArrayList<>();
+        final List<String> result = new ArrayList<>();
         splitWorker(str, separatorChar, false, result);
         return result;
     }
@@ -115,7 +116,7 @@ public final class StrUtils {
             i++;
         }
 
-        if (match || (preserveAllTokens && lastMatch)) {
+        if (match || preserveAllTokens && lastMatch) {
             list.add(str.substring(start, i));
         }
     }
@@ -124,8 +125,8 @@ public final class StrUtils {
      * Decode a 2-digit hex byte from within a string.
      */
     public static byte decodeHexByte(CharSequence s, int pos) {
-        int hi = decodeHexNibble(s.charAt(pos));
-        int lo = decodeHexNibble(s.charAt(pos + 1));
+        final int hi = decodeHexNibble(s.charAt(pos));
+        final int lo = decodeHexNibble(s.charAt(pos + 1));
         if (hi == -1 || lo == -1) {
             throw new IllegalArgumentException(String.format(
                     "invalid hex byte '%s' at index %d of '%s'", s.subSequence(pos, pos + 2), pos, s));

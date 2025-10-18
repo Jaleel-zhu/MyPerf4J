@@ -1,15 +1,15 @@
 package cn.myperf4j.core;
 
-import cn.myperf4j.base.constant.PropertyValues.Metrics;
-import cn.myperf4j.base.util.concurrent.ExecutorManager;
-import cn.myperf4j.base.util.Logger;
-import cn.myperf4j.base.util.concurrent.ThreadUtils;
 import cn.myperf4j.base.Scheduler;
+import cn.myperf4j.base.constant.PropertyValues.Metrics;
+import cn.myperf4j.base.util.Logger;
+import cn.myperf4j.base.util.concurrent.ExecutorManager;
+import cn.myperf4j.base.util.concurrent.ThreadUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -19,7 +19,7 @@ public final class LightWeightScheduler {
 
     private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(2,
             ThreadUtils.newThreadFactory("MyPerf4J-LightWeightScheduler-"),
-            new ThreadPoolExecutor.DiscardOldestPolicy());
+            new DiscardOldestPolicy());
 
     static {
         ExecutorManager.addExecutorService(scheduledExecutor);
@@ -88,14 +88,14 @@ public final class LightWeightScheduler {
     }
 
     private void runAllTasks(long currentMills) {
-        long lastTimeSliceStartTime = currentMills - millTimeSlice;
+        final long lastTimeSliceStartTime = currentMills - millTimeSlice;
         for (int i = 0; i < schedulerList.size(); ++i) {
             runTask(schedulerList.get(i), lastTimeSliceStartTime);
         }
     }
 
     private void runTask(Scheduler scheduler, long lastTimeSliceStartTime) {
-        long startMills = System.currentTimeMillis();
+        final long startMills = System.currentTimeMillis();
         try {
             scheduler.run(lastTimeSliceStartTime, millTimeSlice);
         } catch (Exception e) {
@@ -105,5 +105,4 @@ public final class LightWeightScheduler {
                     + ") cost: " + (System.currentTimeMillis() - startMills) + "ms");
         }
     }
-
 }

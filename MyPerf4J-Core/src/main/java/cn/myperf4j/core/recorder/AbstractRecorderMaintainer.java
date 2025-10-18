@@ -1,12 +1,12 @@
 package cn.myperf4j.core.recorder;
 
-import cn.myperf4j.base.metric.MethodMetrics;
 import cn.myperf4j.base.MethodTag;
-import cn.myperf4j.base.config.ProfilingParams;
-import cn.myperf4j.base.metric.exporter.MethodMetricsExporter;
-import cn.myperf4j.base.util.concurrent.ExecutorManager;
-import cn.myperf4j.base.util.Logger;
 import cn.myperf4j.base.Scheduler;
+import cn.myperf4j.base.config.ProfilingParams;
+import cn.myperf4j.base.metric.MethodMetrics;
+import cn.myperf4j.base.metric.exporter.MethodMetricsExporter;
+import cn.myperf4j.base.util.Logger;
+import cn.myperf4j.base.util.concurrent.ExecutorManager;
 import cn.myperf4j.core.MethodMetricsHistogram;
 import cn.myperf4j.core.MethodTagMaintainer;
 
@@ -46,21 +46,11 @@ public abstract class AbstractRecorderMaintainer implements Scheduler {
 
     private MethodMetricsExporter methodMetricsExporter;
 
-    private boolean accurateMode;
-
-    public boolean initial(MethodMetricsExporter processor, boolean accurateMode, int bakRecordersCnt) {
+    public boolean initial(MethodMetricsExporter processor, int bakRecordersCnt) {
         this.methodMetricsExporter = processor;
-        this.accurateMode = accurateMode;
-        bakRecordersCnt = getFitBakRecordersCnt(bakRecordersCnt);
-
-        if (!initRecorders(bakRecordersCnt)) {
+        if (!initRecorders(getFitBakRecordersCnt(bakRecordersCnt)) || !initBackgroundTask()) {
             return false;
         }
-
-        if (!initBackgroundTask()) {
-            return false;
-        }
-
         return initialState = initOther();
     }
 
@@ -99,11 +89,8 @@ public abstract class AbstractRecorderMaintainer implements Scheduler {
 
     public abstract boolean initOther();
 
-    protected Recorder createRecorder(int methodTagId, int mostTimeThreshold, int outThresholdCount) {
-        if (accurateMode) {
-            return AccurateRecorder.getInstance(methodTagId, mostTimeThreshold, outThresholdCount);
-        }
-        return RoughRecorder.getInstance(methodTagId, mostTimeThreshold);
+    protected Recorder createRecorder(int methodTagId, ProfilingParams params) {
+        return DefaultRecorder.getInstance(methodTagId, params.mostTimeThreshold(), params.outThresholdCount());
     }
 
     public abstract void addRecorder(int methodTagId, ProfilingParams params);
@@ -216,8 +203,8 @@ public abstract class AbstractRecorderMaintainer implements Scheduler {
                     MethodMetricsHistogram.recordMetrics(metrics);
                     metricsExporter.process(metrics, epochStartMillis, epochStartMillis, epochEndMillis);
                 }
-            } catch (Throwable e) {
-                Logger.error("ExportMetricsTask.run() error", e);
+            } catch (Throwable t) {
+                Logger.error("ExportMetricsTask.run() error", t);
             } finally {
                 metricsExporter.afterProcess(epochStartMillis, epochStartMillis, epochEndMillis);
                 final long cost = System.currentTimeMillis() - start;

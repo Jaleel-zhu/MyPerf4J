@@ -9,19 +9,10 @@ import java.io.InputStream;
  */
 public final class InputStreamUtils {
 
-    private static final ThreadLocal<ByteArrayOutputStream> OP_TL = new ThreadLocal<ByteArrayOutputStream>() {
-        @Override
-        protected ByteArrayOutputStream initialValue() {
-            return new ByteArrayOutputStream(4096);
-        }
-    };
+    private static final ThreadLocal<ByteArrayOutputStream> OP_TL =
+            ThreadLocal.withInitial(() -> new ByteArrayOutputStream(4096));
 
-    private static final ThreadLocal<byte[]> BYTES_TL = new ThreadLocal<byte[]>() {
-        @Override
-        protected byte[] initialValue() {
-            return new byte[1024];
-        }
-    };
+    private static final ThreadLocal<byte[]> BYTES_TL = ThreadLocal.withInitial(() -> new byte[1024]);
 
     private InputStreamUtils() {
         //empty
@@ -32,8 +23,8 @@ public final class InputStreamUtils {
             return null;
         }
 
-        ByteArrayOutputStream result = OP_TL.get();
-        byte[] buffer = BYTES_TL.get();
+        final ByteArrayOutputStream result = OP_TL.get();
+        final byte[] buffer = BYTES_TL.get();
         try {
             int length;
             while ((length = inputStream.read(buffer)) != -1) {
@@ -50,8 +41,8 @@ public final class InputStreamUtils {
             return null;
         }
 
-        ByteArrayOutputStream result = OP_TL.get();
-        byte[] buffer = BYTES_TL.get();
+        final ByteArrayOutputStream result = OP_TL.get();
+        final byte[] buffer = BYTES_TL.get();
         try {
             int length;
             while ((length = inputStream.read(buffer)) != -1) {

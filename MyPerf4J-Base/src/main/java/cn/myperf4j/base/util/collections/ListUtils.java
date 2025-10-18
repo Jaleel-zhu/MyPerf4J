@@ -8,10 +8,6 @@ import java.util.List;
  */
 public final class ListUtils {
 
-    private ListUtils() {
-        //empty
-    }
-
     public static <T> boolean isEmpty(List<T> list) {
         return list == null || list.isEmpty();
     }
@@ -25,7 +21,7 @@ public final class ListUtils {
             throw new IllegalArgumentException(size + " <= 0");
         }
 
-        if (list == null || list.size() == 0) {
+        if (list == null || list.isEmpty()) {
             return new ArrayList<>(0);
         }
 
@@ -43,5 +39,9 @@ public final class ListUtils {
 
         final int toIndex = Math.min(list.size(), fromIndex + limit);
         return list.subList(fromIndex, toIndex);
+    }
+
+    private ListUtils() {
+        //empty
     }
 }
